@@ -1,10 +1,10 @@
 # find all missing log rotation logs
-for folder in $(find ./ -type d /var/log/syslogng); 
+for folder in $(find /var/log/syslogng/ -type d); 
 do  
-	syslogs=$(ls /var/log/syslogng/$folder); 
+	syslogs=$(ls $folder); 
 	if ! echo $syslogs |  grep -q ".gz" ;
 	then 
-		echo /var/log/syslogng/$folder; 
+		echo $folder; 
 	fi; 
 done;
 
