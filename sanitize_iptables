@@ -1,6 +1,7 @@
 #!/bin/bash
-# log every removed rules
-# 
+# save iptables rules 
+# log every removed rules in files
+# iptables chain for DROP packet
 remove_inactive_rules () {
 	IPTABLES_CHAINS="INPUT OUTPUT"
 	for chain in $IPTABLES_CHAINS; do
