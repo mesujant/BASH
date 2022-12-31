@@ -1,0 +1,18 @@
+#!/bin/bash
+# log every removed rules
+# 
+remove_inactive_rules () {
+	IPTABLES_CHAINS="INPUT OUTPUT"
+	for chain in $IPTABLES_CHAINS; do
+		while (iptables -nvL $chain | grep -m 1 "0 ACCEPT"); do
+			echo " $chain $rules_no";
+			rules_no=$(iptables -nvL $chain --line | grep -m 1 "0 ACCEPT" | cut -d" " -f1)
+			iptables -D $chain $rules_no; read;
+			
+			
+		done;
+	done;
+}
+
+echo "removing inactive rules" > /tmp/sanitizing_iptables.logs
+remove_inactive_rules | tee /tmp/sanitizing_iptables.log
