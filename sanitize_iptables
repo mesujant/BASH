@@ -1,9 +1,16 @@
 #!/bin/bash
-# save iptables rules 
-# log every removed rules in files
-# iptables chain for DROP packet
+preprocess () {
+	IPTABLES=$(which iptables)
+	if [ ! -z $IPTABLES ]; then
+		IPTABLES_SAVE=$(which iptables-save)
+		$IPTABLES_SAVE > /tmp/iptables_$(date +%F)
+	else
+		echo "iptables not found"
+	fi
+
+}
 remove_inactive_rules () {
-	IPTABLES_CHAINS="INPUT OUTPUT"
+	IPTABLES_CHAINS="INPUT"
 	for chain in $IPTABLES_CHAINS; do
 		while (iptables -nvL $chain | grep -m 1 "0 ACCEPT"); do
 			echo " $chain $rules_no";
@@ -13,7 +20,12 @@ remove_inactive_rules () {
 			
 		done;
 	done;
+	# for output chain remove all rules with state traacking and default drop
+	iptables -I OUTPUT 1 -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
+	while [ ! -z "$(iptables -nvL OUTPUT 2)" ]; do
+		iptables -D OUTPUT 2
+	done;
 }
 
-echo "removing inactive rules" > /tmp/sanitizing_iptables.logs
-remove_inactive_rules | tee /tmp/sanitizing_iptables.log
+
+remove_inactive_rules
