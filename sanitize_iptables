@@ -16,7 +16,7 @@ remove_inactive_rules () {
 		while (iptables -nvL $chain | grep -m 1 "0 ACCEPT"); do
 			echo " $chain $rules_no";
 			rules_no=$(iptables -nvL $chain --line | grep -m 1 "0 ACCEPT" | cut -d" " -f1)
-			iptables -D $chain $rules_no; read;
+			iptables -D $chain $rules_no;
 			
 			
 		done;
@@ -40,12 +40,15 @@ reload_iptables () {
 	# check os vesrion and proceed accordingly
 	release=$(cat /etc/*release)
 	if echo $release | grep -iq ubuntu; then
-		echo "ubuntu machine"
+		iptables-save > /etc/iptables/rules.v4
+		netfilter-persistent reload
 	elif echo $release | grep -iq centos; then
-		echo "centos machine"
+		service iptables save
 	else
 		echo "machnine os type couldnot be determined"
 	fi;
 }
 
 remove_inactive_rules
+post_process
+reload_iptables
