@@ -1,0 +1,11 @@
+  - name: allow bacula-dir for bacula-fd in INPUT
+    iptables:
+      chain: INPUT
+      source: 10.12.10.8
+      action: insert
+      rule_num: "4"
+      protocol: tcp
+      destination_port: "9102"
+      comment: "bacula-dir -> nic-psql[bacula-fd]"
+      jump: ACCEPT
+

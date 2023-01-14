@@ -1,0 +1,107 @@
+---
+# tasks file for iptables
+  - name: accept all from and to local
+    iptables:
+      chain: INPUT
+      in_interface: lo
+      action: insert
+      rule_num: "1"
+      jump: ACCEPT
+
+  - name: allow icmp traffic
+    iptables:
+      chain: INPUT
+      action: insert
+      rule_num: "2"
+      protocol: "icmp"
+      jump: ACCEPT
+
+  - name: allow all related and established traffic
+    iptables:
+      chain: INPUT
+      action: insert
+      rule_num: "3"
+      ctstate: RELATED,ESTABLISHED
+      jump: ACCEPT
+
+  - name: accept ssh from log only
+    iptables:
+      chain: INPUT
+      action: insert
+      rule_num: "4"
+      protocol: "tcp"
+      destination_port: "22"
+      jump: ACCEPT
+      comment: "log -> sshd"
+
+  - name: allow snmp from nagios-srv-01
+    iptables:
+      chain: INPUT
+      action: insert
+      rule_num: "5"
+      protocol: "udp"
+      destination_port: "161"
+      jump: ACCEPT
+      comment: "nagios-srv-01 -> snmpd"
+
+  - name: allow traffic from prom-srv-01
+    iptables:
+      chain: INPUT
+      action: insert
+      rule_num: "6"
+      protocol: "tcp"
+      destination_port: "9001"
+      jump: ACCEPT
+      comment: "prom-srv-01 -> node_exporter"
+
+  - name: set default input policy to drop
+    iptables:
+      chain: INPUT
+      policy: DROP
+ 
+  - name: allow all related and established traffic
+    iptables:
+      chain: OUTPUT
+      action: insert
+      rule_num: "1"
+      ctstate: NEW,RELATED,ESTABLISHED
+      jump: ACCEPT
+
+  - name: set default input policy to drop
+    iptables:
+      chain: OUTPUT
+      policy: DROP
+
+ # create new chain for logging
+ 
+      #  - name: create logging chain
+      #iptables:
+      #chain: LOGGING
+      #chain_management: true
+
+  - name: log input drop traffic
+    iptables:
+      chain: INPUT
+      action: append
+      jump: LOGGING
+      comment: "log input dropped traffic"
+
+  - name: log input drop traffic
+    iptables:
+      chain: LOGGING
+      action: insert
+      rule_num: "1"
+      state: present
+      limit: 2/second
+      limit_burst: "20"
+      log_prefix: "IPTABLES:Dropped"
+      log_level: info
+      comment: "limit log for dropped traffic"
+
+  - name: drop after logging
+    iptables:
+      chain: LOGGING
+      action: insert
+      rule_num: "2"
+      jump: DROP
+      comment: "drop after logging"

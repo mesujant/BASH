@@ -30,25 +30,33 @@ remove_inactive_rules () {
 
 post_process() {
 	iptables -N LOGGING
-	iptables -A INPUT -j LOGGING
-	iptables -A OUTPUT -j LOGGING
-	iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "IPtables-Dropped: " --log-level 4
-	iptables -A LOGGING -j DROP
+#	iptables -A INPUT -j LOGGING
+#	iptables -A OUTPUT -j LOGGING
+#	iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "IPtables-Dropped: " --log-level 4
+#	iptables -A LOGGING -j DROP
 }
 
 reload_iptables () {
 	# check os vesrion and proceed accordingly
 	release=$(cat /etc/*release)
 	if echo $release | grep -iq ubuntu; then
-		iptables-save > /etc/iptables/rules.v4
+		netfilter-persistent reload
 		netfilter-persistent reload
 	elif echo $release | grep -iq centos; then
 		service iptables save
+		service iptables reload
+
 	else
 		echo "machnine os type couldnot be determined"
 	fi;
 }
 
-remove_inactive_rules
+check_base_rules () {
+	ansible-playbook -i hosts iptables.yml
+}
+
+preprocess
 post_process
+check_base_rules
+remove_inactive_rules
 reload_iptables

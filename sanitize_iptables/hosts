@@ -1,0 +1,7 @@
+[localhost]
+localhost
+
+[all:vars]
+ansible_ssh_user=wlansible
+ansible_ssh_pass=wlansible
+ansible_sudo_pass=wlansible

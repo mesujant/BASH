@@ -1,0 +1,6 @@
+---
+  - name: ENSURING BASE RULES
+    hosts: all
+    become: yes
+    roles:
+      - ./iptables
